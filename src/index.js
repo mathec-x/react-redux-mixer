@@ -31,9 +31,6 @@ if (!Object.prototype.update) {
   });
 }
 
-/**
- * @type {ReduxMixerType}
- */
 export const ReduxMixer = (rootname, initialState, defineYourFkKey = "uuid") => {
   const reducer = (state = initialState, action) => {
     const name = rootname || action.type.substring(0, action.type.indexOf(':'));

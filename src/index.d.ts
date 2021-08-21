@@ -19,5 +19,5 @@ declare global {
     }
 }
 
-type ReduxMixerType = (rootname: Names, initialState: State, defineYourFkKey?: String | "uuid" | "id") => Reducer<State, Action<MixedActions>>;
+type ReduxMixerType = (rootname: Names, initialState: State, defineYourFkKey?: String) => Reducer<State, Action<MixedActions>>;
 export declare const ReduxMixer: ReduxMixerType;
