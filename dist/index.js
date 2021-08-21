@@ -5,19 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ReduxMixer = void 0;
 const immutability_helper_1 = __importDefault(require("immutability-helper"));
-// extend<object>('$mergeOrUnset', (
-//     objectIterator,
-//     original: object) => {
-//     const copy = { ...original };
-//     for (const key in objectIterator) {
-//         if (objectIterator[key]) {
-//             copy[key] = objectIterator[key];
-//         } else {
-//             delete copy[key];
-//         }
-//     }
-//     return copy;
-// });
 const ReduxMixer = (rootname, initialState) => {
     const reducer = (state = initialState, action) => {
         const name = rootname || action.type.substring(0, action.type.indexOf(':'));

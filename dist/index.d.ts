@@ -1,4 +1,4 @@
-import type { MixedReducer, State } from 'redux';
+import type { MixedReducer, State, Names } from 'react-redux';
 declare type PayloadType = {
     [x: string]: any;
     updating?: Boolean;
@@ -7,7 +7,7 @@ declare type PayloadType = {
 declare type Obj = {
     [x: string]: PayloadType[] | PayloadType;
 };
-declare module 'redux' {
+declare module 'react-redux' {
     interface DefaultRootState extends Obj {
     }
     type Names = keyof DefaultRootState;
@@ -18,11 +18,6 @@ declare module 'redux' {
         payload: PayloadType;
     }
     type MixedReducer<S = State, A = MixedActions> = (state: S, action: A) => S;
-    interface DefaultRootState {
-        user: {
-            id: Number;
-        };
-    }
 }
-export declare const ReduxMixer: (rootname: String, initialState: State) => MixedReducer<State, import("redux").MixedActions>;
+export declare const ReduxMixer: (rootname: Names, initialState: State) => MixedReducer<State, import("react-redux").MixedActions>;
 export {};

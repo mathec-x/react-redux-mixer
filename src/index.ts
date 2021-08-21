@@ -1,5 +1,5 @@
 import update from 'immutability-helper';
-import type { MixedReducer, State } from 'redux';
+import type { MixedReducer, State, Names } from 'react-redux';
 
 type PayloadType = {
     [x: string]: any;
@@ -9,7 +9,7 @@ type PayloadType = {
 
 type Obj = { [x: string]: PayloadType[] | PayloadType }
 
-declare module 'redux' {
+declare module 'react-redux' {
     export interface DefaultRootState extends Obj { }
     export type Names = keyof DefaultRootState;
     export type State = DefaultRootState[Names];
@@ -24,31 +24,10 @@ declare module 'redux' {
         payload: PayloadType
     }
     export type MixedReducer<S = State, A = MixedActions> = (state: S, action: A) => S;
-    export interface DefaultRootState {
-        user: {
-            id: Number
-        }
-    }
 }
 
-// extend<object>('$mergeOrUnset', (
-//     objectIterator,
-//     original: object) => {
-
-//     const copy = { ...original };
-
-//     for (const key in objectIterator) {
-//         if (objectIterator[key]) {
-//             copy[key] = objectIterator[key];
-//         } else {
-//             delete copy[key];
-//         }
-//     }
-//     return copy;
-// });
-
 export const ReduxMixer = (
-    rootname: String,
+    rootname: Names,
     initialState: State) => {
 
     const reducer: MixedReducer = (state = initialState, action) => {
