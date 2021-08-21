@@ -66,7 +66,7 @@ export const ReduxMixer = (rootname, initialState, defineYourFkKey = "uuid") => 
         return state.update({
           [state.findIndex((s) => s[defineYourFkKey] === action.payload[defineYourFkKey])]: {
             $mergeOrUnset: {
-              delete: action.payload.delete,
+              deleting: action.payload.deleting,
             },
           },
         });
