@@ -30,7 +30,7 @@ export const ReduxMixer = (
     rootname: Names,
     initialState: State) => {
 
-    const reducer: MixedReducer = (state = initialState, action) => {
+    const reducer: MixedReducer = (state = initialState, action, fkKey: String = 'uuid') => {
 
         const name = rootname || action.type.substring(0, action.type.indexOf(':'));
 
@@ -47,7 +47,7 @@ export const ReduxMixer = (
 
             case `${name}:will:update`:
                 return update(state, {
-                    [state.findIndex((s: PayloadType) => s.uuid === action.payload.uuid)]: {
+                    [state.findIndex((s: PayloadType) => s[fkKey] === action.payload[fkKey])]: {
                         $merge: {
                             updating: action.payload.updating,
                         },
@@ -56,14 +56,14 @@ export const ReduxMixer = (
 
             case `${name}:update`:
                 return update(state, {
-                    [state.findIndex((s: PayloadType) => s.uuid === action.payload.uuid)]: {
+                    [state.findIndex((s: PayloadType) => s[fkKey] === action.payload[fkKey])]: {
                         $set: action.payload,
                     },
                 });
 
             case `${name}:will:delete`:
                 return update(state, {
-                    [state.findIndex((s: PayloadType) => s.uuid === action.payload.uuid)]: {
+                    [state.findIndex((s: PayloadType) => s[fkKey] === action.payload[fkKey])]: {
                         $merge: {
                             deleting: action.payload.deleting,
                         },
@@ -71,7 +71,7 @@ export const ReduxMixer = (
                 });
 
             case `${name}:delete`:
-                return update(state, (x: PayloadType[]) =>  x.filter((s) => s.uuid !== action.payload.uuid));
+                return update(state, (x: PayloadType[]) =>  x.filter((s) => s[fkKey] !== action.payload[fkKey]));
 
             default: return state;
         }
