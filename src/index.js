@@ -31,7 +31,10 @@ if (!Object.prototype.update) {
   });
 }
 
-export const ReduxMixer = (rootname, initialState) => {
+/**
+ * @type {ReduxMixerType}
+ */
+export const ReduxMixer = (rootname, initialState, defineYourFkKey = "uuid") => {
   const reducer = (state = initialState, action) => {
     const name = rootname || action.type.substring(0, action.type.indexOf(':'));
 
@@ -48,7 +51,7 @@ export const ReduxMixer = (rootname, initialState) => {
 
       case `${name}:will:update`:
         return state.update({
-          [state.findIndex((s) => s.uuid === action.payload.uuid)]: {
+          [state.findIndex((s) => s[defineYourFkKey] === action.payload[defineYourFkKey])]: {
             $mergeOrUnset: {
               updating: action.payload.updating,
             },
@@ -57,14 +60,14 @@ export const ReduxMixer = (rootname, initialState) => {
 
       case `${name}:update`:
         return state.update({
-          [state.findIndex((s) => s.uuid === action.payload.uuid)]: {
+          [state.findIndex((s) => s[defineYourFkKey] === action.payload[defineYourFkKey])]: {
             $set: action.payload,
           },
         });
 
       case `${name}:will:delete`:
         return state.update({
-          [state.findIndex((s) => s.uuid === action.payload.uuid)]: {
+          [state.findIndex((s) => s[defineYourFkKey] === action.payload[defineYourFkKey])]: {
             $mergeOrUnset: {
               delete: action.payload.delete,
             },
@@ -72,7 +75,7 @@ export const ReduxMixer = (rootname, initialState) => {
         });
 
       case `${name}:delete`:
-        return state.update((x) => x.filter((s) => s.uuid !== action.payload.uuid));
+        return state.update((x) => x.filter((s) => s[defineYourFkKey] !== action.payload[defineYourFkKey]));
 
       default: return state;
     }
