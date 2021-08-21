@@ -60,3 +60,7 @@ use the entity with the name in the mixer
     ├── ${value}:will:delete // takes an "deleting" property: boolean
     └── ${value}:delete // delete object by fk
 ```
+
+## tools
+Mutate a copy of data without changing the original source
+this package uses [immutability-helper](https://github.com/kolodny/immutability-helper)
