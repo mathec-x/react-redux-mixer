@@ -64,3 +64,6 @@ use the entity with the name in the mixer
 ## tools
 Mutate a copy of data without changing the original source
 this package uses [immutability-helper](https://github.com/kolodny/immutability-helper)
+
+- manage reducer with websocket
+[this package is perfect with web socket, see example](https://github.com/mathec-x/lecontrol-client)
