@@ -1,6 +1,6 @@
-import update from 'immutability-helper';
+import update, { extend } from 'immutability-helper';
 
-update.extend('$mergeOrUnset', (objectIterator, original) => {
+extend('$mergeOrUnset', (objectIterator, original) => {
   const copy = { ...original };
   // eslint-disable-next-line no-restricted-syntax
   for (const key in objectIterator) {
@@ -13,70 +13,69 @@ update.extend('$mergeOrUnset', (objectIterator, original) => {
   return copy;
 });
 
-if (!Array.prototype.update) {
-  // eslint-disable-next-line no-extend-native
-  Object.defineProperty(Array.prototype, 'update', {
-    value(object) {
-      return update(this, object);
+let defaultActions = {
+  mount: (state, action) => update(state, {
+    $set: action.payload,
+  }),
+  create: (state, action) => update(state, {
+    $unshift: [action.payload],
+  }),
+  update: (state, action, FKey) => update(state, {
+    [state.findIndex((s) => s[FKey] === action.payload[FKey])]: {
+      $set: action.payload,
     },
-  });
-}
-
-if (!Object.prototype.update) {
-  // eslint-disable-next-line no-extend-native
-  Object.defineProperty(Object.prototype, 'update', {
-    value(object) {
-      return update(this, object);
+  }),
+  merge: (state, action, FKey) => state instanceof Array ? {
+    [state.findIndex((s) => s[FKey] === action.payload[FKey])]: {
+      [prop]: action.payload
+    }} : { 
+    $merge: action.payload 
+  },
+  delete: (state, action, FKey) => update(state, (x) => x
+    .filter((s) => s[FKey] !== action.payload[FKey])),
+  'will:update': (state, action, FKey) => update(state, {
+    [state.findIndex((s) => s[FKey] === action.payload[FKey])]: {
+      $mergeOrUnset: {
+        updating: action.payload.updating,
+      },
     },
-  });
-}
-
-export const ReduxMixer = (rootname, initialState, defineYourFkKey = "uuid") => {
-  const reducer = (state = initialState, action) => {
-    const name = rootname || action.type.substring(0, action.type.indexOf(':'));
-
-    switch (action.type) {
-      case `${name}:mount`:
-        return state.update({
-          $set: action.payload,
-        });
-
-      case `${name}:create`:
-        return state.update({
-          $unshift: [action.payload],
-        });
-
-      case `${name}:will:update`:
-        return state.update({
-          [state.findIndex((s) => s[defineYourFkKey] === action.payload[defineYourFkKey])]: {
-            $mergeOrUnset: {
-              updating: action.payload.updating,
-            },
-          },
-        });
-
-      case `${name}:update`:
-        return state.update({
-          [state.findIndex((s) => s[defineYourFkKey] === action.payload[defineYourFkKey])]: {
-            $set: action.payload,
-          },
-        });
-
-      case `${name}:will:delete`:
-        return state.update({
-          [state.findIndex((s) => s[defineYourFkKey] === action.payload[defineYourFkKey])]: {
-            $mergeOrUnset: {
-              deleting: action.payload.deleting,
-            },
-          },
-        });
-
-      case `${name}:delete`:
-        return state.update((x) => x.filter((s) => s[defineYourFkKey] !== action.payload[defineYourFkKey]));
-
-      default: return state;
-    }
-  };
-
-  return reducer;
+  }),
+  'will:delete': (state, action, FKey) => update(state, {
+    [state.findIndex((s) => s[FKey] === action.payload[FKey])]: {
+      $mergeOrUnset: {
+        deleting: action.payload.deleting,
+      },
+    },
+  }),
 };
+
+export function setActions(newActions) {
+  defaultActions = newActions;
+}
+
+export function extendActions(newActions) {
+  defaultActions = { ...defaultActions, ...newActions };
+}
+
+export function ReduxMixer(rootname, initialState, options = { }) {
+  if(!options.key) options.key = 'uuid';
+
+  const array = Object.keys(defaultActions);
+  const events = {};
+  for (let index = 0; index < array.length; index++) {
+    const nsp = array[index];
+    const actionname = [rootname, nsp].join(':');
+    events[actionname] = defaultActions[nsp];
+  }
+  if(options.log){
+    console.log(events);
+  }
+  function reducer(state = initialState, action) {
+    if (events[action.type]) {
+      return events[action.type](state, action, options.key);
+    }
+
+    return state;
+  }
+  return reducer;
+}
