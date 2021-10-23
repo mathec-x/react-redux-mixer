@@ -5,7 +5,7 @@ extend('$mergeOrUnset', (objectIterator, original) => {
   // eslint-disable-next-line no-restricted-syntax
   for (const key in objectIterator) {
     if (objectIterator[key]) {
-      copy[key] = true;
+      copy[key] = objectIterator[key];
     } else {
       delete copy[key];
     }
@@ -27,9 +27,9 @@ let defaultActions = {
   }),
   merge: (state, action, FKey) => state instanceof Array ? {
     [state.findIndex((s) => s[FKey] === action.payload[FKey])]: {
-      [prop]: action.payload
+      $mergeOrUnset: action.payload
     }} : { 
-    $merge: action.payload 
+    $mergeOrUnset: action.payload 
   },
   delete: (state, action, FKey) => update(state, (x) => x
     .filter((s) => s[FKey] !== action.payload[FKey])),
