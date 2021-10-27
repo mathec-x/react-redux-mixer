@@ -1,6 +1,6 @@
 {
   "name": "react-redux-mixer",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "reducer creator facilitator",
   "author": "Matheus Correa",
   "repository": "mathec-x/react-redux-mixer",

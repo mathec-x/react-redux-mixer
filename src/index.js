@@ -20,33 +20,56 @@ let defaultActions = {
   create: (state, action) => update(state, {
     $unshift: [action.payload],
   }),
-  update: (state, action, FKey) => update(state, {
-    [state.findIndex((s) => s[FKey] === action.payload[FKey])]: {
-      $set: action.payload,
-    },
-  }),
-  merge: (state, action, FKey) => state instanceof Array ? {
-    [state.findIndex((s) => s[FKey] === action.payload[FKey])]: {
-      $mergeOrUnset: action.payload
-    }} : { 
-    $mergeOrUnset: action.payload 
+  update: (state, action, FKey) => {
+    const actix = state.findIndex((s) => s[FKey] === action.payload[FKey]);
+    if (actix !== -1)
+      return update(state, {
+        [actix]: {
+          $set: action.payload,
+        },
+      })
+    return state;
+  },
+  merge: (state, action, FKey) => {
+    const actix = state.findIndex((s) => s[FKey] === action.payload[FKey]);
+    if (actix !== -1) {
+      return update(state, {
+        [actix]: {
+          $set: {
+            ...state[actix],
+            ...action.payload
+          }
+        }
+      })
+    }
+    return state;
   },
   delete: (state, action, FKey) => update(state, (x) => x
     .filter((s) => s[FKey] !== action.payload[FKey])),
-  'will:update': (state, action, FKey) => update(state, {
-    [state.findIndex((s) => s[FKey] === action.payload[FKey])]: {
-      $mergeOrUnset: {
-        updating: action.payload.updating,
-      },
-    },
-  }),
-  'will:delete': (state, action, FKey) => update(state, {
-    [state.findIndex((s) => s[FKey] === action.payload[FKey])]: {
-      $mergeOrUnset: {
-        deleting: action.payload.deleting,
-      },
-    },
-  }),
+  'will:update': (state, action, FKey) => {
+    const actix = state.findIndex((s) => s[FKey] === action.payload[FKey]);
+    if (actix !== -1)
+      return update(state, {
+        [actix]: {
+          $mergeOrUnset: {
+            updating: action.payload.updating,
+          },
+        },
+      });
+    return state
+  },
+  'will:delete': (state, action, FKey) => {
+    const actix = state.findIndex((s) => s[FKey] === action.payload[FKey]);
+    if (actix !== -1)
+      return update(state, {
+        [actix]: {
+          $mergeOrUnset: {
+            deleting: action.payload.deleting,
+          },
+        },
+      });
+    return state
+  },
 };
 
 export function setActions(newActions) {
@@ -57,8 +80,8 @@ export function extendActions(newActions) {
   defaultActions = { ...defaultActions, ...newActions };
 }
 
-export function ReduxMixer(rootname, initialState, options = { }) {
-  if(!options.key) options.key = 'uuid';
+export function ReduxMixer(rootname, initialState, options = {}) {
+  if (!options.key) options.key = 'uuid';
 
   const array = Object.keys(defaultActions);
   const events = {};
@@ -67,7 +90,7 @@ export function ReduxMixer(rootname, initialState, options = { }) {
     const actionname = [rootname, nsp].join(':');
     events[actionname] = defaultActions[nsp];
   }
-  if(options.log){
+  if (options.log) {
     console.log(events);
   }
   function reducer(state = initialState, action) {
